@@ -1,0 +1,13 @@
+{
+  "name": "sls-cdk-stack",
+  "private": true,
+  "main": "index.js",
+  "repository": "git@github.com:julien-capellari/sls-no-stack.git",
+  "author": "Julien Capellari <julien.capellari@neoxia.com>",
+  "license": "MIT",
+  "packageManager": "yarn@3.2.3",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}
