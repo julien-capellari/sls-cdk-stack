@@ -1,16 +1,16 @@
 import * as apigtw2 from '@aws-cdk/aws-apigatewayv2';
 import { HttpLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations';
+import * as cf from '@aws-cdk/aws-cloudfront';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import * as iam from '@aws-cdk/aws-iam';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as cdk from '@aws-cdk/core';
 import * as path from 'node:path';
-import { PolicyStatement } from '@aws-cdk/aws-iam';
 
 // Stacks
 export class BackendStack extends cdk.Stack {
   // Constructor
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.Construct, id: string, props: cdk.StackProps & { frontend: cf.Distribution }) {
     super(scope, id, props);
 
     // DynamoDB
@@ -32,7 +32,7 @@ export class BackendStack extends cdk.Stack {
       tracing: lambda.Tracing.ACTIVE
     });
 
-    TodoApiHandler.addToRolePolicy(new PolicyStatement({
+    TodoApiHandler.addToRolePolicy(new iam.PolicyStatement({
       resources: [TodoTable.tableArn],
       actions: [
         'dynamodb:GetItem',
@@ -42,7 +42,12 @@ export class BackendStack extends cdk.Stack {
 
     // Api Gateway
     const TodoApi = new apigtw2.HttpApi(this, 'TodoApi', {
-      createDefaultStage: true
+      createDefaultStage: true,
+      corsPreflight: {
+        allowOrigins: [
+          `https://${props.frontend.domainName}`
+        ]
+      }
     });
 
     TodoApi.addRoutes({
